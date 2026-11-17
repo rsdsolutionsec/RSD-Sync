@@ -103,6 +103,16 @@ Todo agente o ingeniero que realice cambios en el repositorio **tiene la obligac
   - Para completar la conexión real de RSD Sync con su propia infraestructura cloud en Supabase y comprobar en vivo el esquema, extensiones y políticas de seguridad RLS.
 - **¿Cómo se hizo?**
   - Mediante `supabase db query --linked`, `supabase projects api-keys` (escrito directamente a `.env`), `SupabaseConnector.checkConnectivity()` (`status: "connected"`, `416 ms`) y prueba de denegación REST para `anon` (`HTTP 401`).
+- **Commit asociado**: `cabf1fa`.
+
+### Iteración 1.3 — Endurecimiento de Supabase Auth (`disable_signup = true`) y Verificación de Usuario Administrador (2026-11-17)
+- **¿Qué se hizo?**
+  - Se verificó en `auth.users` del proyecto `RSD Sync` (`hsehkaojjxemdfgvejwm`) la existencia del usuario confirmado `admin@rsdsolutions.com` coincidente con `ADMIN_EMAILS`.
+  - Se deshabilitó el registro público en `supabase/config.toml` (`enable_signup = false`, `minimum_password_length = 8`, `enable_confirmations = true`, MFA TOTP habilitado) y se aplicó al proyecto remoto mediante `supabase config push --yes`.
+- **¿Por qué se hizo?**
+  - Para impedir registros públicos indiscriminados en la instancia Supabase Auth de RSD Sync (defensa en profundidad adicional a `ADMIN_EMAILS`).
+- **¿Cómo se hizo?**
+  - Verificando en vivo `GET /auth/v1/settings` (`disable_signup: true`) y probando `POST /auth/v1/signup` con un correo no autorizado (`HTTP 422: Signups not allowed for this instance`).
 
 ---
 

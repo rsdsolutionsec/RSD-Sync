@@ -128,7 +128,7 @@ async function formatBullMqJob(
   if (
     queueInstance &&
     currentJob.id &&
-    ((state === 'completed' && currentJob.returnvalue === undefined) ||
+    ((state === 'completed' && (currentJob.returnvalue === undefined || currentJob.returnvalue === null)) ||
       (state === 'failed' && !currentJob.failedReason))
   ) {
     const refreshed = await Job.fromId<TestJobPayload, TestJobResult>(
