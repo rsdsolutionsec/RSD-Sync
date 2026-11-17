@@ -2,7 +2,7 @@
 
 Este documento define el plan completo de desarrollo de **RSD Sync** desde la **Fase 0** hasta la **Fase 10**, con entregables verificables, dependencias y criterios de aceptación por fase.
 
-> **Estado general**: Fases 0 y 1 completadas (pendiente configurar credenciales cloud de Supabase y Vercel cuando el usuario disponga de los accesos). Las capacidades de Fases 2–10 permanecen en diseño/contrato.
+> **Estado general**: Fases 0 y 1 completadas (proyecto Supabase propio de **RSD Sync** vinculado y verificado vía CLI; pendiente enlace de Vercel y `RSD_DATABASE_URL` si se requiere pool Postgres directo en nube). Las capacidades de Fases 2–10 permanecen en diseño/contrato.
 
 ---
 
@@ -11,7 +11,7 @@ Este documento define el plan completo de desarrollo de **RSD Sync** desde la **
 | Fase | Nombre | Estado | Dependencia Principal |
 | --- | --- | --- | --- |
 | **Fase 0** | Arquitectura y preparación | Completada | Ninguna |
-| **Fase 1** | Infraestructura base | Completada (pendiente credenciales cloud) | Fase 0 |
+| **Fase 1** | Infraestructura base | Completada (Supabase conectado; Vercel preparado) | Fase 0 |
 | **Fase 2** | Automation Core | Pendiente | Fase 1 |
 | **Fase 3** | Seguridad y multiempresa | Pendiente | Fase 2 |
 | **Fase 4** | Auditoría e integración de SUMAK | Pendiente | Fase 3 |

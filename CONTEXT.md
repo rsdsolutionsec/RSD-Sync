@@ -92,6 +92,17 @@ Todo agente o ingeniero que realice cambios en el repositorio **tiene la obligac
   - Para transformar la fundación de Fase 0 en una plataforma ejecutable extremo a extremo (API <-> Redis/BullMQ <-> Worker <-> PostgreSQL/Supabase <-> Admin Web) manteniendo aislamiento total respecto a SUMAK.
 - **¿Cómo se hizo?**
   - Reutilizando los paquetes de Fase 0 sin duplicar lógica, ejecutando un patrón BFF en Next.js (`/api/platform/*`) para no exponer secretos al navegador, y verificando RLS real con rol no superusuario (`rsd_sync_app`) y pruebas de integración reales contra Redis y PostgreSQL locales.
+- **Archivos clave y commits**: `.env.example`, `packages/configuration`, `packages/database`, `packages/queue`, `apps/api`, `apps/worker`, `apps/admin`, `docs/phases/phase-1.md`, `docs/operations/vercel-deployment.md`; commits `ccf16fc`, `156bbc1`, `10b6aff`, `f8f7ff9`.
+
+### Iteración 1.2 — Conexión Verificada con el Proyecto Supabase Propio de RSD Sync vía CLI (2026-11-17)
+- **¿Qué se hizo?**
+  - Se verificó la sesión de Supabase CLI en la organización `RSD Solutions Org` (totalmente separada de SUMAK) y el proyecto vinculado `RSD Sync` (`hsehkaojjxemdfgvejwm`, región `us-east-2`).
+  - Se cargaron las llaves `SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY` en `.env` local (excluido de Git) sin imprimir secretos.
+  - Se ejecutaron las migraciones `0001_phase0_foundation.sql` y `0002_phase1_supabase_hardening.sql` en el proyecto Supabase remoto y se registró su aplicación en `rsd_schema_migrations`.
+- **¿Por qué se hizo?**
+  - Para completar la conexión real de RSD Sync con su propia infraestructura cloud en Supabase y comprobar en vivo el esquema, extensiones y políticas de seguridad RLS.
+- **¿Cómo se hizo?**
+  - Mediante `supabase db query --linked`, `supabase projects api-keys` (escrito directamente a `.env`), `SupabaseConnector.checkConnectivity()` (`status: "connected"`, `416 ms`) y prueba de denegación REST para `anon` (`HTTP 401`).
 
 ---
 
