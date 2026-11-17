@@ -47,4 +47,5 @@ Todo cambio en **RSD Sync** debe preservar el diseño de **monolito modular mult
 3. `pnpm typecheck`
 4. `pnpm test`
 5. `pnpm docker:config` (si hubo cambios en Docker/Compose)
-6. Actualizar `CHANGELOG.md` y la documentación afectada en `docs/` cuando corresponda.
+6. Actualizar obligatoriamente `CONTEXT.md` (qué, por qué, cómo, funcionalidades e integraciones) y `AUDIT.md` (controles, hallazgos y resultados de pruebas) en cada iteración.
+7. Actualizar `CHANGELOG.md` y la documentación afectada en `docs/` cuando corresponda.

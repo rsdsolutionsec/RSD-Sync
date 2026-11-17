@@ -101,7 +101,9 @@ El primer cliente real que se integrará sobre la plataforma es **SUMAK**, media
 
 ## Documentación Clave
 
-- [AGENTS.md](./AGENTS.md) — Reglas permanentes para agentes y desarrolladores
+- [AGENTS.md](./AGENTS.md) — Reglas permanentes para agentes y desarrolladores (incluye obligación de mantener `CONTEXT.md` y `AUDIT.md` en cada iteración)
+- [CONTEXT.md](./CONTEXT.md) — Contexto vivo por iteración (qué se hace, por qué se hace, cómo se hace) y catálogo de funcionalidades e integraciones
+- [AUDIT.md](./AUDIT.md) — Registro maestro de auditoría técnica, seguridad multi-tenant, fronteras arquitectónicas y bitácora de verificaciones
 - [ROADMAP.md](./ROADMAP.md) — Plan maestro detallado por fases (Fases 0 a 10)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — Arquitectura del monolito modular, workers y multi-tenancy
 - [DECISIONS.md](./DECISIONS.md) — Registro de decisiones arquitectónicas (ADRs)

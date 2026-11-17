@@ -7,6 +7,8 @@ const rootDir = resolve(fileURLToPath(new URL('..', import.meta.url)));
 
 const requiredRootFiles = [
   'AGENTS.md',
+  'CONTEXT.md',
+  'AUDIT.md',
   'README.md',
   'ROADMAP.md',
   'ARCHITECTURE.md',

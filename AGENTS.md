@@ -18,7 +18,11 @@ Este documento define las normas obligatorias que todo agente o ingeniero debe r
    - Toda herramienta ejecutable por la IA debe estar registrada, tipada con Zod, autorizada para el tenant y validada en backend.
    - **La IA no puede confirmar pagos, ventas, descuentos de inventario ni matrículas completadas sin validación explícita del sistema SUMAK**.
    - Cuando un humano o secretaria interviene en una conversación, la IA debe pausarse automáticamente (`mode = HUMAN`, `aiPaused = true`).
-5. **Sincronización código-documentación**: No documentar funcionalidades futuras como si ya estuvieran implementadas. Distinguir explícitamente entre contratos/estructura de Fase 0 y capacidades de fases posteriores.
+5. **Sincronización código-documentación y registro obligatorio por iteración**:
+   - No documentar funcionalidades futuras como si ya estuvieran implementadas. Distinguir explícitamente entre contratos/estructura de Fase 0 y capacidades de fases posteriores.
+   - **Regla obligatoria de trazabilidad (`CONTEXT.md` y `AUDIT.md`)**: En **cada iteración, tarea o fase**, el agente **debe** actualizar siempre:
+     - `CONTEXT.md`: explicando qué se está haciendo, por qué se está haciendo, cómo se está haciendo, y actualizando el catálogo vivo de funcionalidades e integraciones de la plataforma.
+     - `AUDIT.md`: registrando los controles de seguridad/arquitectura verificados, hallazgos detectados/mitigados y resultados de las pruebas ejecutadas.
 
 ## 3. Reglas de Seguridad y Entorno
 - Prohibido subir archivos `.env`, llaves privadas (`*.pem`, `*.key`), tokens o credenciales reales al repositorio.
