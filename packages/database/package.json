@@ -13,10 +13,17 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "migrate": "node dist/migrations/cli.js"
   },
   "dependencies": {
+    "@rsd-sync/configuration": "workspace:*",
     "@rsd-sync/contracts": "workspace:*",
-    "@rsd-sync/shared": "workspace:*"
+    "@rsd-sync/shared": "workspace:*",
+    "@supabase/supabase-js": "^2.119.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
   }
 }

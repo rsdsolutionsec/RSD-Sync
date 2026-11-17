@@ -8,6 +8,7 @@ build/
 .next/
 out/
 *.tsbuildinfo
+apps/admin/next-env.d.ts
 
 # Test & coverage
 coverage/

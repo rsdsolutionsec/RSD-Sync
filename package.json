@@ -15,6 +15,10 @@
     "test:contracts": "vitest run tests/contracts",
     "test:integration": "vitest run tests/integration",
     "verify:foundation": "node scripts/verify-foundation.mjs",
+    "db:migrate": "pnpm --filter @rsd-sync/database migrate",
+    "dev:api": "pnpm --filter @rsd-sync/api dev",
+    "dev:worker": "pnpm --filter @rsd-sync/worker dev",
+    "dev:admin": "pnpm --filter @rsd-sync/admin dev",
     "docker:config": "docker compose config -q",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down"

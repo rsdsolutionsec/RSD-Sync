@@ -68,3 +68,6 @@ export function computeExponentialBackoffMs(
   const rawDelay = policy.initialBackoffMs * Math.pow(policy.backoffMultiplier, safeAttempt);
   return Math.min(rawDelay, policy.maxBackoffMs);
 }
+
+export * from './bullmq.js';
+export * from './connection.js';
