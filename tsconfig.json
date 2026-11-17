@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/contracts" },
+    { "path": "./packages/configuration" },
+    { "path": "./packages/observability" },
+    { "path": "./packages/security" },
+    { "path": "./packages/queue" },
+    { "path": "./packages/database" },
+    { "path": "./packages/automation-core" },
+    { "path": "./packages/ai-engine" },
+    { "path": "./packages/crm-core" },
+    { "path": "./packages/integrations" },
+    { "path": "./apps/api" },
+    { "path": "./apps/worker" },
+    { "path": "./apps/admin" }
+  ]
+}
