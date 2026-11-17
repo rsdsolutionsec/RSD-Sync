@@ -32,7 +32,7 @@ Este archivo documenta las decisiones técnicas fundamentales de **RSD Sync**, s
 
 - **Estado**: Aceptada (Fase 0)
 - **Contexto**: SUMAK cuenta con un proyecto Supabase en producción. RSD Sync necesita persistencia relacional, RLS y búsqueda vectorial local sin riesgo de contaminar o alterar datos productivos de SUMAK.
-- **Decisión**: Utilizar una instancia local en Docker de `pgvector/pgvector:pg17` con migraciones SQL versionadas compatibles con PostgreSQL/Supabase y RLS habilitado desde la migración `0001`, vinculada a `127.0.0.1:54322`. Prohibido usar el Supabase de producción de SUMAK para pruebas o desarrollo de RSD Sync.
+- **Decisión**: Utilizar una instancia local en Docker de `pgvector/pgvector:pg17` con migraciones SQL versionadas compatibles con PostgreSQL/Supabase y RLS habilitado desde la migración `0001`, vinculada a `127.0.0.1:54332` (puerto aislado de otros servicios locales como Supabase en `54322`). Prohibido usar el Supabase de producción de SUMAK para pruebas o desarrollo de RSD Sync.
 - **Alternativas descartadas**:
   - *Conectar entorno local al Supabase de producción de SUMAK*: Riesgo crítico de corrupción de datos reales, violación de seguridad y acoplamiento del motor de RSD Sync a tablas de un solo cliente.
   - *Base de datos separada solo para vectores*: Duplica infraestructura operativa en local y VPS sin necesidad en esta etapa.

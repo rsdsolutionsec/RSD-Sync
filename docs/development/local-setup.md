@@ -31,7 +31,7 @@ Copy-Item .env.example .env
 
 `docker-compose.yml` define dos servicios base vinculados exclusivamente a `127.0.0.1`:
 - **Redis (`rsd-sync-redis`)**: `127.0.0.1:6379` (con persistencia AOF y política `noeviction` recomendada para BullMQ).
-- **PostgreSQL + pgvector (`rsd-sync-postgres`)**: `127.0.0.1:54322` (ejecuta automáticamente `packages/database/migrations/*.sql` al inicializar el volumen).
+- **PostgreSQL + pgvector (`rsd-sync-postgres`)**: `127.0.0.1:54332` (puerto dedicado para evitar colisión con Supabase local en `54322`; ejecuta automáticamente `packages/database/migrations/*.sql` al inicializar el volumen).
 
 Comandos disponibles:
 

@@ -32,7 +32,7 @@ describe('Configuration & Observability', () => {
     const config = parsePlatformConfig({
       OPENAI_API_KEY: 'sk-test-secret-key',
       SUMAK_WEBHOOK_SECRET: 'sumak-secret-123',
-      DATABASE_URL: 'postgresql://rsd_sync:supersecret@127.0.0.1:54322/rsd_sync_dev',
+      DATABASE_URL: 'postgresql://rsd_sync:supersecret@127.0.0.1:54332/rsd_sync_dev',
     });
 
     const redacted = redactConfigForLogging(config);

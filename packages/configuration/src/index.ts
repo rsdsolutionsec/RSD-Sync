@@ -19,7 +19,7 @@ export const PlatformEnvSchema = z
     DATABASE_URL: z
       .string()
       .min(1)
-      .default('postgresql://rsd_sync:rsd_sync_dev_password@127.0.0.1:54322/rsd_sync_dev'),
+      .default('postgresql://rsd_sync:rsd_sync_dev_password@127.0.0.1:54332/rsd_sync_dev'),
 
     ENCRYPTION_MASTER_KEY: z.string().min(32).default(DEV_MASTER_KEY_PLACEHOLDER),
     JWT_SECRET: z.string().min(32).default(DEV_JWT_SECRET_PLACEHOLDER),

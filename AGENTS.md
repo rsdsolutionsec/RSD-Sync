@@ -29,11 +29,13 @@ Este documento define las normas obligatorias que todo agente o ingeniero debe r
 
 ## 4. Flujo Git y Verificación Obligatoria
 1. Ejecutar `git status` antes de realizar cambios.
-2. Prohibido usar comandos destructivos (`git reset --hard`, force push, sobrescritura de historial).
-3. Trabajar por tareas incrementales; cada unidad funcional completada debe tener su propio commit convencional (`chore:`, `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `security:`).
-4. **No realizar commits sin haber ejecutado y aprobado las pruebas y verificaciones**:
+2. Repositorio remoto configurado: `https://github.com/rsdsolutionsec/RSD-Sync.git`.
+3. **Regla de push manual**: El agente **no** debe ejecutar `git push`; solo debe crear commits locales verificados. El usuario ejecuta los `git push` manualmente.
+4. Prohibido usar comandos destructivos (`git reset --hard`, force push, sobrescritura de historial).
+5. Trabajar por tareas incrementales; cada unidad funcional completada debe tener su propio commit convencional (`chore:`, `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `security:`).
+6. **No realizar commits sin haber ejecutado y aprobado las pruebas y verificaciones**:
    - `pnpm verify:foundation`
    - `pnpm build`
    - `pnpm typecheck`
    - `pnpm test`
-5. Solicitar autorización explícita antes de: modificar producción de SUMAK, ejecutar migraciones en producción, alterar autenticación o permisos de usuarios reales, contratar servicios pagos o cambiar sustancialmente la arquitectura.
+7. Solicitar autorización explícita antes de: modificar producción de SUMAK, ejecutar migraciones en producción, alterar autenticación o permisos de usuarios reales, contratar servicios pagos o cambiar sustancialmente la arquitectura.

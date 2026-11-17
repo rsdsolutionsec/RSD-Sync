@@ -9,7 +9,7 @@ La arquitectura local utiliza contenedores reproducibles vinculados únicamente 
 | Servicio | Imagen | Puerto Local (`127.0.0.1`) | Propósito |
 | --- | --- | --- | --- |
 | `redis` | `redis:7.4-alpine` | `6379` | Colas BullMQ, locks y cache operacional |
-| `postgres` | `pgvector/pgvector:pg17` | `54322` | Persistencia multi-tenant RLS y vectores RAG |
+| `postgres` | `pgvector/pgvector:pg17` | `54332` | Persistencia multi-tenant RLS y vectores RAG |
 | `api` *(perfil `app`)* | `Dockerfile.api` | `4000` | Servidor HTTP Fastify (Fase 1+) |
 | `worker` *(perfil `app`)* | `Dockerfile.worker` | — | Procesador BullMQ independiente (Fase 1+) |
 | `admin` *(perfil `app`)* | `Dockerfile.admin` | `3000` | Panel administrativo Next.js (Fase 7+) |

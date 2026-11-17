@@ -82,5 +82,5 @@ Las conversaciones operan bajo una máquina de estados explícita (`Conversation
 
 ## 7. Despliegue Local vs Futuro Despliegue en VPS
 
-- **Desarrollo local**: Docker Compose provee Redis (`127.0.0.1:6379`) y PostgreSQL 17 con `pgvector` (`127.0.0.1:54322`), mientras los procesos Node.js pueden correr en local o mediante el perfil `app`.
+- **Desarrollo local**: Docker Compose provee Redis (`127.0.0.1:6379`) y PostgreSQL 17 con `pgvector` (`127.0.0.1:54332`, evitando colisión con `54322` de Supabase local), mientras los procesos Node.js pueden correr en local o mediante el perfil `app`.
 - **Producción futura (VPS)**: Empaquetado mediante los Dockerfiles en `infrastructure/docker/`, detrás de un reverse proxy con TLS/HTTPS, volúmenes persistentes respaldados y secretos inyectados en tiempo de ejecución.

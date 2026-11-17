@@ -5,7 +5,7 @@
 Durante la Fase 0 se evaluó cómo aislar el desarrollo y las pruebas de **RSD Sync** respecto al entorno productivo de **SUMAK**:
 
 - **Regla inviolable**: Jamás se utilizará el proyecto Supabase de producción de SUMAK como base de datos de desarrollo ni de pruebas de RSD Sync.
-- **Solución adoptada (ADR-003)**: Utilizar **PostgreSQL 17 con extensión `pgvector`** (`pgvector/pgvector:pg17`) en Docker Compose local en `127.0.0.1:54322`, utilizando migraciones SQL versionadas compatibles con PostgreSQL estándar y Supabase.
+- **Solución adoptada (ADR-003)**: Utilizar **PostgreSQL 17 con extensión `pgvector`** (`pgvector/pgvector:pg17`) en Docker Compose local en `127.0.0.1:54332`, utilizando migraciones SQL versionadas compatibles con PostgreSQL estándar y Supabase.
 - **Beneficios**:
   1. Soporte nativo de **Row Level Security (RLS)** y políticas multi-tenant idénticas a Supabase.
   2. Soporte nativo de **embeddings vectoriales (`vector`)** para la base de conocimiento RAG (Fase 5) sin introducir una segunda base de datos.

@@ -10,13 +10,14 @@ Todo cambio en **RSD Sync** debe preservar el diseño de **monolito modular mult
 ## 2. Flujo de Trabajo Git
 
 1. Inspeccionar siempre `git status` antes de comenzar.
-2. No trabajar con código no probado ni agrupar múltiples fases en un solo commit.
-3. Para funcionalidades extensas, crear ramas descriptivas desde `main`:
+2. Repositorio remoto oficial: `https://github.com/rsdsolutionsec/RSD-Sync.git`. El agente realiza únicamente commits locales verificados; el `git push` es ejecutado manualmente por el propietario del repositorio.
+3. No trabajar con código no probado ni agrupar múltiples fases en un solo commit.
+4. Para funcionalidades extensas, crear ramas descriptivas desde `main`:
    - `feat/<modulo-o-fase>`
    - `fix/<descripcion-corta>`
    - `docs/<tema>`
    - `security/<control>`
-4. Prohibido usar `git reset --hard`, `--force` o sobrescribir la rama principal.
+5. Prohibido usar `git reset --hard`, `--force` o sobrescribir la rama principal.
 
 ### Formato de Commits (Conventional Commits)
 - `chore:` — configuración, dependencias, tooling, infraestructura base
