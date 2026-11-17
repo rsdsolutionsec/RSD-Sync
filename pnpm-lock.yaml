@@ -21,6 +21,57 @@ importers:
         specifier: ^3.24.2
         version: 3.25.76
 
+  apps/admin:
+    dependencies:
+      '@rsd-sync/configuration':
+        specifier: workspace:*
+        version: link:../../packages/configuration
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+
+  apps/api:
+    dependencies:
+      '@rsd-sync/configuration':
+        specifier: workspace:*
+        version: link:../../packages/configuration
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@rsd-sync/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@rsd-sync/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@rsd-sync/security':
+        specifier: workspace:*
+        version: link:../../packages/security
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+
+  apps/worker:
+    dependencies:
+      '@rsd-sync/automation-core':
+        specifier: workspace:*
+        version: link:../../packages/automation-core
+      '@rsd-sync/configuration':
+        specifier: workspace:*
+        version: link:../../packages/configuration
+      '@rsd-sync/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@rsd-sync/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+
   packages/ai-engine:
     dependencies:
       '@rsd-sync/contracts':

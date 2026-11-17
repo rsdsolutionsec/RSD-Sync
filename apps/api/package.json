@@ -1,0 +1,26 @@
+{
+  "name": "@rsd-sync/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@rsd-sync/configuration": "workspace:*",
+    "@rsd-sync/contracts": "workspace:*",
+    "@rsd-sync/observability": "workspace:*",
+    "@rsd-sync/queue": "workspace:*",
+    "@rsd-sync/security": "workspace:*",
+    "@rsd-sync/shared": "workspace:*"
+  }
+}

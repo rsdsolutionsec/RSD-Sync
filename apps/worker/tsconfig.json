@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*.ts"],
+  "references": [
+    { "path": "../../packages/automation-core" },
+    { "path": "../../packages/configuration" },
+    { "path": "../../packages/observability" },
+    { "path": "../../packages/queue" },
+    { "path": "../../packages/shared" }
+  ]
+}
