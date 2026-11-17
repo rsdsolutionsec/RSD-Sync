@@ -21,6 +21,116 @@ importers:
         specifier: ^3.24.2
         version: 3.25.76
 
+  packages/ai-engine:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/security':
+        specifier: workspace:*
+        version: link:../security
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+
+  packages/automation-core:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/queue':
+        specifier: workspace:*
+        version: link:../queue
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/configuration:
+    dependencies:
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+
+  packages/contracts:
+    dependencies:
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+
+  packages/crm-core:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/security':
+        specifier: workspace:*
+        version: link:../security
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/database:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/integrations:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+
+  packages/observability:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/queue:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+
+  packages/security:
+    dependencies:
+      '@rsd-sync/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@rsd-sync/shared':
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/shared: {}
+
 packages:
 
   '@esbuild/aix-ppc64@0.28.2':
