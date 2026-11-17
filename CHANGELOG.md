@@ -2,6 +2,17 @@
 
 Todos los cambios relevantes de **RSD Sync** se registran cronológicamente en este archivo siguiendo una estructura inspirada en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [0.2.0-phase1] — 2026-11-17
+
+### Agregado (Fase 1 — Infraestructura operativa, Supabase y primer panel web)
+- `@rsd-sync/configuration`: soporte para `RSD_DATABASE_URL`, `RSD_DATABASE_DIRECT_URL`, `DATABASE_TARGET`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS`, `ADMIN_API_KEY`, `APP_URL`, `API_URL`, `NEXT_PUBLIC_SUPABASE_*`, `DEV_ADMIN_ACCESS_KEY` y cargador seguro `.env` local (`loadLocalEnvIfPresent`).
+- `@rsd-sync/database`: cliente real `PostgresDatabaseClient` (`pg.Pool` con transacciones multi-tenant `app.current_tenant_id`), conector `SupabaseConnector`, runner de migraciones SQL y migración `0002_phase1_supabase_hardening.sql` (endurecimiento RLS y rol no superusuario `rsd_sync_app`).
+- `@rsd-sync/queue`: conexión `ioredis` (`createRedisConnection`, `checkRedisHealth`), colas/workers BullMQ reales (`enqueueTestJob`, `getTestJobStatus`, `listRecentTestJobs`) y heartbeat de presencia del worker.
+- `apps/api`: servidor HTTP Fastify 5 con Helm/CORS, correlación, error handler global, protección administrativa y endpoints `/health`, `/health/live`, `/health/ready`, `/api/v1/status`, `/api/v1/jobs/test`, `/api/v1/jobs`, `/api/v1/jobs/:jobId`.
+- `apps/worker`: proceso worker independiente BullMQ con procesador `platform.health.test-job`, control de concurrencia, reintentos/backoff, heartbeat en Redis y apagado controlado.
+- `apps/admin`: panel operativo web en Next.js 16 + Tailwind CSS 4 + Lucide Icons con rutas `/`, `/infrastructure`, `/jobs` y `/login`, patrón BFF (`/api/platform/*`) sin secretos en navegador, soporte Supabase Auth + `ADMIN_EMAILS` y configuración `vercel.json` / `next.config.ts`.
+- Documentación de Fase 1 ([docs/phases/phase-1.md](./docs/phases/phase-1.md), [docs/operations/vercel-deployment.md](./docs/operations/vercel-deployment.md)) y pruebas de integración reales contra PostgreSQL, Redis, Fastify y Worker BullMQ.
+
 ## [0.1.0-phase0] — 2026-11-17
 
 ### Agregado (Fase 0 — Arquitectura y preparación)

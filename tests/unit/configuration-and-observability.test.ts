@@ -1,4 +1,10 @@
-import { parsePlatformConfig, redactConfigForLogging } from '@rsd-sync/configuration';
+import {
+  isSupabaseBackendConfigured,
+  parseAdminEmails,
+  parsePlatformConfig,
+  redactConfigForLogging,
+  resolveEffectiveDatabaseConnection,
+} from '@rsd-sync/configuration';
 import { createLogger, sanitizeLogData, type LogEntry } from '@rsd-sync/observability';
 import { asCorrelationId, asTenantId, ValidationError } from '@rsd-sync/shared';
 import { describe, expect, it } from 'vitest';
@@ -11,6 +17,34 @@ describe('Configuration & Observability', () => {
     expect(config.API_PORT).toBe(4000);
     expect(config.WORKER_CONCURRENCY).toBe(5);
     expect(config.SUMAK_ADAPTER_MODE).toBe('readonly');
+    expect(resolveEffectiveDatabaseConnection(config).target).toBe('local');
+  });
+
+  it('resolves supabase connection target and admin email allowlists accurately', () => {
+    const config = parsePlatformConfig({
+      DATABASE_TARGET: 'auto',
+      RSD_DATABASE_URL: 'postgresql://postgres:secret@db.example.supabase.co:5432/postgres',
+      RSD_DATABASE_DIRECT_URL: 'postgresql://postgres:secret@db.example.supabase.co:5432/postgres',
+      SUPABASE_URL: 'https://example.supabase.co',
+      SUPABASE_ANON_KEY: 'anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role-secret',
+      ADMIN_EMAILS: 'Admin@RsdSolutions.com, ops@rsdsolutions.com , invalid',
+      ADMIN_API_KEY: 'internal-admin-key-123456',
+    });
+
+    const resolved = resolveEffectiveDatabaseConnection(config);
+    expect(resolved.target).toBe('supabase');
+    expect(isSupabaseBackendConfigured(config)).toBe(true);
+    expect(parseAdminEmails(config.ADMIN_EMAILS)).toEqual([
+      'admin@rsdsolutions.com',
+      'ops@rsdsolutions.com',
+    ]);
+
+    const redacted = redactConfigForLogging(config);
+    expect(redacted['SUPABASE_SERVICE_ROLE_KEY']).toBe('[REDACTED]');
+    expect(redacted['SUPABASE_ANON_KEY']).toBe('[REDACTED]');
+    expect(redacted['ADMIN_API_KEY']).toBe('[REDACTED]');
+    expect(String(redacted['RSD_DATABASE_URL'])).not.toContain('secret');
   });
 
   it('rejects default placeholder keys when NODE_ENV is production', () => {

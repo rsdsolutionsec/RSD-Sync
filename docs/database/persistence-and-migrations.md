@@ -28,11 +28,26 @@ Las migraciones residen en `packages/database/migrations/` con prefijo numérico
 
 ---
 
-## 3. Esquema Inicial (`0001_phase0_foundation.sql`)
+## 3. Esquema Inicial y Endurecimiento (`0001` y `0002`)
 
-En la Fase 0 se define la migración fundacional con:
-- Extensiones `pgcrypto` y `vector`.
-- Función `app_current_tenant_id()`.
-- Tabla `tenants` (identificador, slug único, nombre, estado, configuración de límites, timestamps).
-- Tabla `audit_logs` (registro inmutable por `tenant_id`, actor, acción, recurso, correlación y metadatos sanitizados).
-- Políticas RLS activadas en ambas tablas.
+- **`0001_phase0_foundation.sql`**:
+  - Extensiones `pgcrypto` y `vector`.
+  - Función `app_current_tenant_id()`.
+  - Tabla `tenants` y tabla `audit_logs` con políticas RLS activadas y forzadas (`FORCE ROW LEVEL SECURITY`).
+- **`0002_phase1_supabase_hardening.sql`**:
+  - Tabla de control de migraciones `rsd_schema_migrations` con RLS activado.
+  - Política RLS completa (`FOR ALL` con `USING` y `WITH CHECK`) sobre `tenants`.
+  - Revocación de permisos directos para `anon` en tablas internas cuando corre dentro de Supabase.
+  - Rol no superusuario `rsd_sync_app` (`NOBYPASSRLS`) para validar aislamiento real mediante pruebas automatizadas.
+
+---
+
+## 4. Conexión Dual: PostgreSQL Local vs Supabase Cloud de RSD Sync
+
+`PostgresDatabaseClient` (`packages/database/src/clients/postgres-client.ts`) y `SupabaseConnector` (`packages/database/src/clients/supabase-client.ts`) operan sobre una única fuente de verdad resuelta por `resolveEffectiveDatabaseConnection`:
+
+1. **`DATABASE_TARGET=local`**: utiliza `DATABASE_URL` (`127.0.0.1:54332` en Docker local).
+2. **`DATABASE_TARGET=supabase`**: exige `RSD_DATABASE_URL` (y `RSD_DATABASE_DIRECT_URL` para migraciones) con SSL automático hacia el proyecto Supabase propio de **RSD Sync**.
+3. **`DATABASE_TARGET=auto`** *(por defecto)*: usa `RSD_DATABASE_URL` si está configurada; si no, usa PostgreSQL local de Docker sin bloquear el desarrollo.
+
+> **Nota de seguridad**: `SUPABASE_SERVICE_ROLE_KEY` solo se instancia en backend (`SupabaseConnector`) y jamás se expone a `apps/admin` en el navegador.

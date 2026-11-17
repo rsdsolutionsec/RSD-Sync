@@ -48,3 +48,17 @@ Los errores del sistema extienden `RsdError` con código estable, estado HTTP su
 
 - Los endpoints de webhooks responden rápidamente tras validar la firma HMAC y persistir/encolar el evento con `idempotencyKey`.
 - Cualquier reintento con la misma `idempotencyKey` dentro del mismo `tenantId` debe devolver la referencia de la ejecución existente sin duplicar efectos secundarios.
+
+---
+
+## 5. Endpoints Operativos Implementados (Fase 1)
+
+| Endpoint | Protección | Descripción |
+| --- | --- | --- |
+| `GET /health` | Pública | Sonda básica del proceso Fastify |
+| `GET /health/live` | Pública | Liveness probe del proceso HTTP |
+| `GET /health/ready` | Pública | Readiness probe de Redis y base de datos (`200` / `503`) |
+| `GET /api/v1/status` | `Bearer` JWT o `x-admin-api-key` | Diagnóstico consolidado (API, Worker, Redis, DB, Supabase) sin secretos |
+| `POST /api/v1/jobs/test` | `Bearer` JWT o `x-admin-api-key` | Encola trabajo de prueba en BullMQ (`rsd.events`) |
+| `GET /api/v1/jobs` | `Bearer` JWT o `x-admin-api-key` | Lista trabajos recientes de prueba en BullMQ |
+| `GET /api/v1/jobs/:jobId` | `Bearer` JWT o `x-admin-api-key` | Consulta estado, intentos, resultado o error de un trabajo |

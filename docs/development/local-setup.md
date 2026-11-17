@@ -51,20 +51,43 @@ pnpm docker:down
 
 ---
 
-## 4. Comandos de Validación y Pruebas
+## 4. Comandos de Validación, Base de Datos y Procesos Locales
 
 ```powershell
 # Verifica estructura obligatoria, ausencia de .env rastreados y reglas del repositorio
 pnpm verify:foundation
 
-# Compila todos los paquetes y aplicaciones TypeScript
+# Compila todos los paquetes y aplicaciones TypeScript (incluye Next.js admin)
 pnpm build
 
 # Verifica tipos en todo el monorepo
 pnpm typecheck
 
-# Ejecuta todas las pruebas unitarias, de contratos y fronteras arquitectónicas
+# Aplica migraciones SQL pendientes al target configurado (PostgreSQL local o Supabase)
+pnpm db:migrate
+
+# Ejecuta todas las pruebas unitarias, de contratos y de integración real
 pnpm test
+```
+
+### Ejecución de Procesos Independientes (Fase 1)
+
+En terminales separadas (con `.env` configurado y `pnpm docker:up` activo):
+
+```powershell
+# Terminal 1: API Fastify (http://127.0.0.1:4000)
+pnpm dev:api
+
+# Terminal 2: Worker BullMQ (conectado a Redis 127.0.0.1:6379)
+pnpm dev:worker
+
+# Terminal 3: Panel administrativo Next.js (http://127.0.0.1:3000)
+pnpm dev:admin
+```
+
+Para consultar logs de contenedores Docker locales:
+```powershell
+docker compose logs -f redis postgres
 ```
 
 ---

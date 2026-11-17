@@ -13,6 +13,7 @@ import {
   SumakEnrollmentRequestInputSchema,
   SumakProductSchema,
 } from '@rsd-sync/integrations';
+import { TestJobPayloadSchema, TestJobResultSchema } from '@rsd-sync/queue';
 import { ExternalValidationRequiredError } from '@rsd-sync/shared';
 import { getWorkerBootstrapInfo } from '@rsd-sync/worker';
 import { describe, expect, it } from 'vitest';
@@ -100,7 +101,7 @@ describe('Platform Contracts, SUMAK Adapter Policy & App Bootstraps', () => {
     ).toBe('course-1');
   });
 
-  it('exposes Phase 0 bootstrap descriptors without exposing browser admin secrets', () => {
+  it('exposes Phase 1 bootstrap descriptors without exposing browser admin secrets', () => {
     const config = parsePlatformConfig({});
     const api = getApiBootstrapInfo(config);
     const worker = getWorkerBootstrapInfo(config);
@@ -110,5 +111,22 @@ describe('Platform Contracts, SUMAK Adapter Policy & App Bootstraps', () => {
     expect(api.healthRoutes.map((r) => r.path)).toEqual(['/health/live', '/health/ready']);
     expect(worker.subscriptions.length).toBeGreaterThanOrEqual(5);
     expect(admin.usesGlobalAdminSecretInBrowser).toBe(false);
+
+    const payload = TestJobPayloadSchema.parse({
+      correlationId: 'corr-contract-1',
+      message: 'smoke-test',
+    });
+    expect(payload.shouldFail).toBe(false);
+    expect(payload.delayMs).toBe(0);
+
+    const result = TestJobResultSchema.parse({
+      jobId: 'job-1',
+      processedByWorker: 'worker-1',
+      processedAt: '2026-11-17T02:00:00.000Z',
+      durationMs: 12,
+      echoMessage: 'smoke-test',
+      attempt: 1,
+    });
+    expect(result.attempt).toBe(1);
   });
 });

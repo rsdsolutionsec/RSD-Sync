@@ -8,8 +8,8 @@ El primer cliente real que se integrará sobre la plataforma es **SUMAK**, media
 
 ## Estado Actual del Proyecto
 
-- **Fase activa completada en preparación**: **Fase 0 — Arquitectura y preparación**
-- **Estado de ejecución**: Estructura de monorepo, contratos base, capa de seguridad inicial, límites de dominio, Docker Compose local (Redis + PostgreSQL/pgvector), documentación maestra y pruebas de arquitectura implementadas. Las capacidades operativas de runtime (Fastify HTTP, BullMQ workers, adaptador SUMAK, IA runtime, WhatsApp y CRM UI) se implementarán progresivamente entre las Fases 1 y 10 según [ROADMAP.md](./ROADMAP.md).
+- **Fases completadas**: **Fase 0 — Arquitectura y preparación** y **Fase 1 — Infraestructura operativa, Supabase y primer panel web**
+- **Estado de ejecución**: API HTTP real con **Fastify**, proceso worker independiente con **BullMQ** sobre **Redis**, persistencia y migraciones SQL en **PostgreSQL 17 (`pgvector`)** + conector preparado para el proyecto **Supabase** propio de RSD Sync, y panel web de diagnóstico en **Next.js (`apps/admin`)** listo para despliegue en **Vercel**. Las capacidades de dominio avanzadas (Automation Core persistente, RBAC completo, auditoría SUMAK, AI Engine runtime, WhatsApp y CRM UI completo) se implementarán entre las Fases 2 y 10 según [ROADMAP.md](./ROADMAP.md).
 
 ---
 
@@ -18,10 +18,10 @@ El primer cliente real que se integrará sobre la plataforma es **SUMAK**, media
 | Capa | Tecnología |
 | --- | --- |
 | **Monorepo y Runtime** | Node.js LTS (>=22), TypeScript estricto (`NodeNext`), pnpm workspaces |
-| **Backend & Contratos** | Fastify (Fase 1+), Zod |
-| **Colas & Scheduler** | Redis 7.4, BullMQ (Fase 1+) |
-| **Persistencia** | PostgreSQL 17 + `pgvector`, migraciones SQL versionadas, RLS multi-tenant |
-| **Panel Administrativo** | Next.js, React, TypeScript, Tailwind CSS, Lucide Icons (Fase 7+) |
+| **Backend & Contratos** | Fastify 5, Zod |
+| **Colas & Scheduler** | Redis 7.4, BullMQ 6 |
+| **Persistencia** | PostgreSQL 17 + `pgvector`, Supabase (`@supabase/supabase-js` / `@supabase/ssr`), migraciones SQL versionadas, RLS |
+| **Panel Administrativo** | Next.js 16, React 19, TypeScript, Tailwind CSS 4, Lucide Icons (desplegable en Vercel) |
 | **Inteligencia Artificial** | Capa agnóstica de proveedores con herramientas autorizadas y RAG (Fase 5+) |
 | **Infraestructura & Pruebas** | Docker, Docker Compose, Vitest, GitHub Actions CI |
 
@@ -89,12 +89,20 @@ El primer cliente real que se integrará sobre la plataforma es **SUMAK**, media
    pnpm docker:up
    ```
 
-5. **Ejecutar verificación integral de Fase 0**:
+5. **Ejecutar migraciones SQL y verificación integral**:
    ```bash
-   pnpm verify:foundation
    pnpm build
    pnpm typecheck
+   pnpm db:migrate
+   pnpm verify:foundation
    pnpm test
+   ```
+
+6. **Iniciar servicios en local** (en terminales separadas):
+   ```bash
+   pnpm dev:api
+   pnpm dev:worker
+   pnpm dev:admin
    ```
 
 ---

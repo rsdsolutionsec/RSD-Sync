@@ -35,7 +35,9 @@ const requiredDocFiles = [
   'docs/security/security-model.md',
   'docs/integrations/sumak-integration.md',
   'docs/operations/docker-and-deployment.md',
+  'docs/operations/vercel-deployment.md',
   'docs/phases/README.md',
+  'docs/phases/phase-1.md',
 ];
 
 const requiredWorkspaces = [

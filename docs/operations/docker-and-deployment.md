@@ -10,9 +10,11 @@ La arquitectura local utiliza contenedores reproducibles vinculados únicamente 
 | --- | --- | --- | --- |
 | `redis` | `redis:7.4-alpine` | `6379` | Colas BullMQ, locks y cache operacional |
 | `postgres` | `pgvector/pgvector:pg17` | `54332` | Persistencia multi-tenant RLS y vectores RAG |
-| `api` *(perfil `app`)* | `Dockerfile.api` | `4000` | Servidor HTTP Fastify (Fase 1+) |
-| `worker` *(perfil `app`)* | `Dockerfile.worker` | — | Procesador BullMQ independiente (Fase 1+) |
-| `admin` *(perfil `app`)* | `Dockerfile.admin` | `3000` | Panel administrativo Next.js (Fase 7+) |
+| `api` *(perfil `app`)* | `Dockerfile.api` | `4000` | Servidor HTTP Fastify (activo en Fase 1) |
+| `worker` *(perfil `app`)* | `Dockerfile.worker` | — | Procesador BullMQ independiente (activo en Fase 1) |
+| `admin` *(perfil `app`)* | `Dockerfile.admin` | `3000` | Panel administrativo Next.js (activo en Fase 1; desplegable en Vercel) |
+
+Para el despliegue independiente del panel web en Vercel, consulta [vercel-deployment.md](./vercel-deployment.md).
 
 ### Volúmenes Persistentes
 - `rsd_sync_redis_data`: Persistencia AOF de Redis.
