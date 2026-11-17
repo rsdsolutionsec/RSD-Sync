@@ -13,13 +13,17 @@
   },
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "node --watch dist/index.js",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@rsd-sync/automation-core": "workspace:*",
     "@rsd-sync/configuration": "workspace:*",
     "@rsd-sync/observability": "workspace:*",
     "@rsd-sync/queue": "workspace:*",
-    "@rsd-sync/shared": "workspace:*"
+    "@rsd-sync/shared": "workspace:*",
+    "bullmq": "^6.7.7",
+    "ioredis": "^6.0.0"
   }
 }

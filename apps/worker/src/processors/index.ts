@@ -13,3 +13,5 @@ export const DEFAULT_PROCESSOR_DESCRIPTORS: readonly WorkerProcessorDescriptor[]
   { queue: QUEUE_NAMES.WHATSAPP_OUTBOUND, responsibility: 'Dispatch outbound WhatsApp responses' },
   { queue: QUEUE_NAMES.DEAD_LETTER, responsibility: 'Persist exhausted jobs for inspection' },
 ];
+
+export * from './test-job.js';
