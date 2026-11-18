@@ -130,3 +130,5 @@ export interface SumakIntegrationAdapter {
     input: SumakEnrollmentRequestInput,
   ): Promise<SumakPendingRequestResult>;
 }
+
+export * from './knowledge.js';

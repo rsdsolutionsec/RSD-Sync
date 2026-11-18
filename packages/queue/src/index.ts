@@ -71,3 +71,4 @@ export function computeExponentialBackoffMs(
 
 export * from './bullmq.js';
 export * from './connection.js';
+export * from './whatsapp-jobs.js';

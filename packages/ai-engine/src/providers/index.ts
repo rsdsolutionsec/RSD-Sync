@@ -34,3 +34,5 @@ export interface AiModelProvider {
   readonly providerName: AiProviderName;
   complete(request: AiCompletionRequest): Promise<AiCompletionResponse>;
 }
+
+export * from './gemini.js';

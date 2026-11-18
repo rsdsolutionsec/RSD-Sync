@@ -5,3 +5,5 @@ export interface TenantRepository<TEntity, TCreateInput> {
   listByTenant(tenantId: TenantId, limit?: number, offset?: number): Promise<readonly TEntity[]>;
   create(tenantId: TenantId, input: TCreateInput): Promise<TEntity>;
 }
+
+export * from './bot-operations.js';

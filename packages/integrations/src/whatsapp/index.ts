@@ -26,3 +26,5 @@ export interface WhatsAppInboundMessage {
 export interface WhatsAppAdapterPort {
   sendMessage(message: WhatsAppOutboundMessage): Promise<WhatsAppSendResult>;
 }
+
+export * from './cloud-api.js';

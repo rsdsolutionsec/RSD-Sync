@@ -45,11 +45,13 @@ export const PlatformEnvSchema = z
     WEBHOOK_SIGNATURE_TIMEOUT_MS: z.coerce.number().int().positive().default(300000),
 
     AI_DEFAULT_PROVIDER: z.enum(['openai', 'anthropic', 'gemini']).default('openai'),
+    AI_DEFAULT_MODEL: z.string().min(1).default('gemini-3.8-flash'),
     OPENAI_API_KEY: z.string().optional(),
     ANTHROPIC_API_KEY: z.string().optional(),
     GOOGLE_GENAI_API_KEY: z.string().optional(),
     AI_DAILY_COST_LIMIT_USD: z.coerce.number().nonnegative().default(10),
 
+    WHATSAPP_DELIVERY_MODE: z.enum(['local_http', 'cloud_api']).default('local_http'),
     WHATSAPP_API_VERSION: z.string().min(2).default('v21.0'),
     WHATSAPP_VERIFY_TOKEN: z.string().optional(),
     WHATSAPP_APP_SECRET: z.string().optional(),

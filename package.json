@@ -16,6 +16,7 @@
     "test:integration": "vitest run tests/integration",
     "verify:foundation": "node scripts/verify-foundation.mjs",
     "db:migrate": "pnpm --filter @rsd-sync/database migrate",
+    "seed:sumak": "node scripts/seed-sumak-local.mjs",
     "dev:api": "pnpm --filter @rsd-sync/api dev",
     "dev:worker": "pnpm --filter @rsd-sync/worker dev",
     "dev:admin": "pnpm --filter @rsd-sync/admin dev",

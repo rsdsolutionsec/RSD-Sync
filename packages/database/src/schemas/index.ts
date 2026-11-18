@@ -4,6 +4,14 @@ import type { CorrelationId, TenantId } from '@rsd-sync/shared';
 export const DATABASE_TABLES = {
   TENANTS: 'tenants',
   AUDIT_LOGS: 'audit_logs',
+  CHANNEL_CONNECTIONS: 'channel_connections',
+  AI_AGENTS: 'ai_agents',
+  KNOWLEDGE_DOCUMENTS: 'knowledge_documents',
+  CONTACTS: 'contacts',
+  CONVERSATIONS: 'conversations',
+  MESSAGES: 'messages',
+  AUTOMATION_EXECUTIONS: 'automation_executions',
+  COMMERCIAL_APPROVALS: 'commercial_approvals',
 } as const;
 
 export interface TenantRow {
