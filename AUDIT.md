@@ -22,7 +22,9 @@ Este documento registra el estado de auditoría continua de **RSD Sync** en mate
 | **AUD-BIZ-02** | Atención Humana | Pausa obligatoria de respuestas automáticas de IA (`aiPaused = true`) cuando una secretaria u operador pasa la conversación a modo `HUMAN` o `COPILOT`, e imposibilidad de que `AI_AGENT` reactive el modo `AI` por sí mismo. | **CUMPLIDO** | `transitionConversationMode` y `shouldAiAutoReply` probados en `tests/unit/crm-and-automation.test.ts`. |
 | **AUD-INF-01** | Infraestructura Local | Todos los puertos expuestos en `docker-compose.yml` están vinculados exclusivamente a `127.0.0.1` y aislados de contenedores de SUMAK (`54332` en lugar de `54322`). | **CUMPLIDO** | Verificado por `scripts/verify-foundation.mjs` y `docker compose ps`. |
 | **AUD-INF-02** | Runtime API-Worker | Flujo completo `Fastify API -> Redis/BullMQ -> Independent Worker` verificado (ejecución exitosa, fallo/reintentos, parada y reinicio de worker sin duplicación). | **CUMPLIDO** | Probado extremo a extremo en `tests/integration/api-worker-bullmq.test.ts`. |
-| **AUD-CLD-01** | Supabase Cloud & Vercel | Proyecto Supabase propio de RSD Sync (`hsehkaojjxemdfgvejwm` en `RSD Solutions Org`, aislado de SUMAK) vinculado por CLI, migrado (`0001` y `0002`), con `rowsecurity = true`, denegación REST `anon` (`HTTP 401`) y `SupabaseConnector` conectado (`status: "connected"`). Despliegue en Vercel preparado (`vercel.json`) pendiente de enlace en cuenta Vercel. | **VERIFICADO (SUPABASE) / PENDIENTE VERCEL** | `supabase db query --linked`, sonda `SupabaseConnector`, sonda HTTP `anon` (`401`). |
+| **AUD-CLD-01** | Supabase Cloud & Vercel | Proyecto Supabase propio de RSD Sync (`hsehkaojjxemdfgvejwm` en `RSD Solutions Org`, aislado de SUMAK) vinculado por CLI, migrado (`0001`, `0002`, `0003`), con `rowsecurity = true`, denegación REST `anon` (`HTTP 401`) y `SupabaseConnector` conectado (`status: "connected"`). Despliegue en Vercel preparado (`vercel.json`) pendiente de enlace en cuenta Vercel. | **VERIFICADO (SUPABASE) / PENDIENTE VERCEL** | `supabase db query --linked`, sonda `SupabaseConnector`, sonda HTTP `anon` (`401`). |
+| **AUD-WA-01** | Webhooks & Idempotencia WhatsApp | Verificación `HMAC-SHA256` sobre cuerpo crudo (`x-hub-signature-256`) en `POST /api/v1/webhooks/whatsapp`, challenge `GET`, parser Zod Meta Cloud API, simulador local firmado y dedup atómica en `automation_executions` + `messages`. | **CUMPLIDO** | `apps/api/src/routes/whatsapp.ts`, `tests/unit/whatsapp-and-gemini.test.ts`, `tests/integration/whatsapp-bot-e2e.test.ts` (E2E real sobre Redis/PostgreSQL). |
+| **AUD-AI-01** | Proveedor Gemini & Higiene | `GeminiAiModelProvider` envía la clave vía cabecera `x-goog-api-key` (nunca en URL) y redacta `[REDACTED_API_KEY]` en errores HTTP; `apps/admin/src/components` libre de referencias a secretos o SUMAK. | **CUMPLIDO** | `packages/ai-engine/src/providers/gemini.ts`, `tests/unit/whatsapp-and-gemini.test.ts`, `tests/unit/admin-auth-and-security.test.ts`. |
 
 ---
 
@@ -63,18 +65,36 @@ Este documento registra el estado de auditoría continua de **RSD Sync** en mate
 - **Resolución aplicada**: En `formatBullMqJob` (`packages/queue/src/bullmq.ts`), cuando `state` es `completed` sin `returnvalue` (o `failed` sin `failedReason`), se re-consulta automáticamente el `Job.fromId` actualizado.
 - **Estado**: **Cerrado y verificado** (`tests/integration/api-worker-bullmq.test.ts` en verde).
 
+### Hallazgo #06 — Desajuste de columnas en `audit_logs` durante `updateConversationMode` (2026-11-18)
+- **Fase / Iteración**: Iteración 1.4
+- **Severidad**: Alta (error HTTP `500` al cambiar modo de conversación a `HUMAN` en PostgreSQL real)
+- **Descripción**: `BotOperationsRepository.updateConversationMode` referenciaba `actor_type` cuando el esquema real definido en `0001_phase0_foundation.sql` utiliza `actor_id`, `actor_role` y `correlation_id`.
+- **Resolución aplicada**: Se alineó la sentencia `INSERT INTO audit_logs` con las columnas reales (`actor_id`, `actor_role`, `correlation_id`) recibiendo `actorRole` y `correlationId` desde la API y el Worker.
+- **Estado**: **Cerrado y verificado** (`tests/integration/whatsapp-bot-e2e.test.ts` en verde).
+
+### Hallazgo #07 — Disponibilidad del modelo `gemini-2.5-flash` vs `gemini-3.8-flash` (2026-11-18)
+- **Fase / Iteración**: Iteración 1.4
+- **Severidad**: Alta (error HTTP `404` en la API REST de Gemini para claves nuevas)
+- **Descripción**: La sonda en vivo contra `generativelanguage.googleapis.com` usando `GOOGLE_GENAI_API_KEY` devolvió `404 NOT_FOUND` para `gemini-2.5-flash` indicando el uso obligatorio de `gemini-3.8-flash` para cuentas nuevas.
+- **Resolución aplicada**: Se actualizó el modelo por defecto a `gemini-3.8-flash` en `.env`, `.env.example`, `@rsd-sync/configuration`, el seed de SUMAK (`pnpm seed:sumak`) y las pruebas; y se comprobó respuesta HTTP `200` en vivo sin exponer la clave.
+- **Estado**: **Cerrado y verificado**.
+
+### Hallazgo #08 — Interferencia paralela entre Workers BullMQ de distintas suites E2E (2026-11-18)
+- **Fase / Iteración**: Iteración 1.4
+- **Severidad**: Media (condición de carrera en pruebas cuando dos archivos lanzan workers sobre el mismo Redis)
+- **Descripción**: Con `fileParallelism: true`, `api-worker-bullmq.test.ts` y `whatsapp-bot-e2e.test.ts` suscribían workers simultáneos a `rsd.whatsapp-inbound` en `127.0.0.1:6379`, robando trabajos entre suites.
+- **Resolución aplicada**: Se configuró `fileParallelism: false` en `vitest.config.ts`.
+- **Estado**: **Cerrado y verificado** (`10` suites / `36` pruebas en verde).
+
 ---
 
-## 3. Auditoría Programada del Sistema Cliente SUMAK (Pendiente para Fase 4)
+## 3. Auditoría Read-Only del Sistema Cliente SUMAK
 
-Conforme al plan maestro ([ROADMAP.md](./ROADMAP.md)), la auditoría de lectura sobre el repositorio y esquema de **SUMAK** se ejecutará en la **Fase 4** bajo las siguientes reglas estrictas:
-1. **Solo lectura**: Prohibido modificar archivos o ejecutar migraciones sobre el repositorio o base de datos productiva de SUMAK.
-2. **Alcance de inspección**:
-   - Arquitectura general y stack de la aplicación SUMAK.
-   - Esquema de tablas y relaciones en Supabase (multinivel, productos, inventario, precios, academia, cursos, matrículas, pagos, usuarios y roles).
-   - Políticas RLS existentes, funciones RPC y Edge Functions disponibles.
-   - Endpoints o mecanismos de validación de operaciones comerciales y académicas.
-3. **Entregable de auditoría**: Los resultados detallados se registrarán en esta sección y en [docs/integrations/sumak-integration.md](./docs/integrations/sumak-integration.md) antes de codificar las consultas reales del adaptador.
+Con el fin de alimentar la base de conocimiento del bot inicial sin acoplar el núcleo de RSD Sync, se auditó el repositorio local `..\Sumak` **en modo estrictamente de solo lectura** (sin modificar código ni conectar su base productiva):
+1. **Identidad y canales**: `Sumak Vida Ecuador S.A.` (`SUMAK`, RUC `1291781000001`, Lab `Sumak Jambi`, Babahoyo).
+2. **Catálogo y packs**: 16 referencias (`00001`–`00016`), 3 packs de ingreso (`Pack Básico` \$125, `Pack Emprendedor` \$225, `Pack Líder` \$525), 50% descuento distribuidor (salvo `00008 Formula 1000` \$60 PVP / \$20 fijo), activación \$100 y 14 niveles MLM (Tramo 1 y Tramo 2).
+3. **Academia y pagos**: Programa *Especialización en Salud Renal y Terapia Botánica Andina* (Curso 1 180 min / 70%, Curso 2 240 min / 75%) y cuentas bancarias oficiales (Pichincha, Produbanco, Bolivariano).
+4. **Entregable aislado**: Documentado en [docs/integrations/sumak-integration.md](./docs/integrations/sumak-integration.md) y encapsulado únicamente en `packages/integrations/src/sumak/knowledge.ts`. La conexión RPC/HTTP en tiempo real hacia SUMAK permanece reservada para las fases posteriores autorizadas.
 
 ---
 
@@ -88,3 +108,4 @@ Conforme al plan maestro ([ROADMAP.md](./ROADMAP.md)), la auditoría de lectura 
 | `2026-11-17` | `1.1` | `pnpm verify:foundation`, `pnpm build`, `pnpm typecheck`, `pnpm db:migrate`, `pnpm test`, `pnpm docker:config` | `14/14` proyectos OK (incl. Next.js 16 `apps/admin`) | `8` suites / `28` tests OK (incl. PostgreSQL RLS real y API-Redis-Worker E2E) | `rsd-sync-redis` y `rsd-sync-postgres` saludables con migraciones `0001` y `0002` |
 | `2026-11-17` | `1.2` | `supabase db query --linked`, `SupabaseConnector.checkConnectivity()`, sonda REST `anon`, `pnpm verify:foundation`, `pnpm build`, `pnpm typecheck`, `pnpm test` | `14/14` proyectos OK (`exit 0`) | `8` suites / `28` tests OK | Supabase `RSD Sync` (`hsehkaojjxemdfgvejwm`) conectado (`416ms`), RLS activo, `anon` denegado (`401`) |
 | `2026-11-17` | `1.3` | `supabase config push --yes`, sonda `auth.users`, `GET /auth/v1/settings`, `POST /auth/v1/signup`, `pnpm verify:foundation`, `pnpm test` | `14/14` proyectos OK (`exit 0`) | `8` suites / `28` tests OK | `disable_signup = true` verificado (`HTTP 422`), usuario `admin@rsdsolutions.com` confirmado |
+| `2026-11-18` | `1.4` | `pnpm docker:up`, `pnpm db:migrate`, `pnpm seed:sumak`, `supabase db query --linked -f 0003`, sonda Gemini `gemini-3.8-flash`, `pnpm verify:foundation`, `pnpm build`, `pnpm typecheck`, `pnpm test` | `14/14` proyectos OK (incl. Next.js `/conversations` y 5 rutas BFF) | **`10` suites / `36` tests OK** (`whatsapp-bot-e2e`, `api-worker-bullmq`, `database-and-rls`, `architecture-boundaries`, `unit`, `contracts`) | `rsd-sync-postgres` (`0003` aplicada + tenant `sumak` sembrado) y `rsd-sync-redis` saludables; Supabase remoto `0003` aplicada |

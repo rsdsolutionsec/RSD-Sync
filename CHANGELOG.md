@@ -2,6 +2,18 @@
 
 Todos los cambios relevantes de **RSD Sync** se registran cronológicamente en este archivo siguiendo una estructura inspirada en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+## [0.3.0-local-bot] — 2026-11-18
+
+### Agregado (Bot WhatsApp Local, Gemini AI, Conocimiento SUMAK y CRM Operativo)
+- `@rsd-sync/configuration`: soporte para `AI_DEFAULT_MODEL` (`gemini-3.8-flash`) y `WHATSAPP_DELIVERY_MODE` (`local_http` | `cloud_api`).
+- `@rsd-sync/database`: migración `0003_whatsapp_ai_crm_local.sql` aplicada en Supabase (`channel_connections`, `ai_agents`, `knowledge_documents`, `contacts`, `conversations`, `messages`, `automation_executions`, `commercial_approvals` con RLS estricto y funciones `resolve_channel_tenant` / `resolve_tenant_id_by_slug`), además de `BotOperationsRepository`.
+- `@rsd-sync/ai-engine`: proveedor `GeminiAiModelProvider` sobre Gemini REST API (autenticación por cabecera y redacción de API key en errores) y selector genérico `selectRelevantKnowledgeSnippets`.
+- `@rsd-sync/integrations`: adaptador `WhatsAppCloudApiAdapter` (`local_http` / `cloud_api`), parser Zod `parseMetaWhatsAppWebhookPayload`, generador `createLocalMetaWebhookPayload` y base de conocimiento auditada en modo solo lectura de `..\Sumak` (`packages/integrations/src/sumak/knowledge.ts`, `docs/integrations/sumak-integration.md`).
+- `@rsd-sync/queue`: contratos BullMQ tipados para `QUEUE_NAMES.WHATSAPP_INBOUND` y `QUEUE_NAMES.WHATSAPP_OUTBOUND`.
+- `apps/api` y `apps/worker`: verificación HMAC-SHA256 `GET/POST /api/v1/webhooks/whatsapp`, simulador firmado `POST /api/v1/simulator/whatsapp/inbound`, endpoints de conversaciones `/api/v1/conversations/*`, procesadores inbound/outbound con idempotencia, pausa automática en modo `HUMAN` y bloqueo `PENDING_VALIDATION` para pagos/compras/matrículas.
+- `apps/admin`: vista `/conversations` con simulador HTTP local, hilo en vivo, cambio de modo (`AI` / `HUMAN` / `COPILOT`) y respuesta humana.
+- Script `pnpm seed:sumak` (`scripts/seed-sumak-local.mjs`) y pruebas unitarias/E2E (`tests/unit/whatsapp-and-gemini.test.ts`, `tests/integration/whatsapp-bot-e2e.test.ts`).
+
 ## [0.2.0-phase1] — 2026-11-17
 
 ### Agregado (Fase 1 — Infraestructura operativa, Supabase y primer panel web)

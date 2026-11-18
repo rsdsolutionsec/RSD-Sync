@@ -66,9 +66,19 @@ pnpm typecheck
 # Aplica migraciones SQL pendientes al target configurado (PostgreSQL local o Supabase)
 pnpm db:migrate
 
+# Carga el tenant inicial SUMAK, conexión WhatsApp local, agente Gemini y base de conocimiento auditada
+pnpm seed:sumak
+
 # Ejecuta todas las pruebas unitarias, de contratos y de integración real
 pnpm test
 ```
+
+### Ejecución del Bot WhatsApp Local + Simulador (Fase 1.4+)
+
+1. Asegúrate de tener `AI_DEFAULT_PROVIDER=gemini`, `WHATSAPP_DELIVERY_MODE=local_http` y opcionalmente tu `GOOGLE_GENAI_API_KEY` en `.env`.
+2. Con Redis y PostgreSQL locales activos (`pnpm docker:up`), aplica migraciones (`pnpm db:migrate`) y ejecuta `pnpm seed:sumak`.
+3. Inicia `pnpm dev:api`, `pnpm dev:worker` y `pnpm dev:admin` en terminales separadas.
+4. Ingresa a `http://127.0.0.1:3000/conversations` para probar el simulador webhook firmado con HMAC-SHA256, el hilo CRM, la pausa automática (`HUMAN`) y el registro de aprobaciones `PENDING_VALIDATION`.
 
 ### Ejecución de Procesos Independientes (Fase 1)
 
