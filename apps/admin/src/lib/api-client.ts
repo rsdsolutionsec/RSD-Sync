@@ -1,6 +1,12 @@
 import type { AdminSession } from './auth';
 import { getAdminServerConfig } from './server-config';
-import type { PlatformStatusDto, TestJobDto } from './types';
+import type {
+  ConversationDetailDto,
+  ConversationModeDto,
+  ConversationSummaryDto,
+  PlatformStatusDto,
+  TestJobDto,
+} from './types';
 
 function buildBackendHeaders(session: AdminSession): HeadersInit {
   const config = getAdminServerConfig();
@@ -193,6 +199,218 @@ export async function fetchPlatformJobById(
         error instanceof Error
           ? `Error consultando trabajo (${error.message})`
           : 'Error consultando trabajo',
+    };
+  }
+}
+
+export async function fetchConversations(
+  session: AdminSession,
+  tenantSlug?: string,
+): Promise<{
+  readonly ok: boolean;
+  readonly tenantSlug?: string | undefined;
+  readonly conversations: readonly ConversationSummaryDto[];
+  readonly error?: string | undefined;
+}> {
+  const config = getAdminServerConfig();
+  try {
+    const query = tenantSlug ? `?tenantSlug=${encodeURIComponent(tenantSlug)}` : '';
+    const response = await fetch(`${config.apiUrl}/api/v1/conversations${query}`, {
+      method: 'GET',
+      headers: buildBackendHeaders(session),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+
+    const payload = (await response.json().catch(() => null)) as {
+      tenantSlug?: string;
+      conversations?: ConversationSummaryDto[];
+      error?: { message?: string };
+    } | null;
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        conversations: [],
+        error:
+          payload?.error?.message ?? `No se pudieron listar conversaciones (HTTP ${response.status})`,
+      };
+    }
+
+    return {
+      ok: true,
+      tenantSlug: payload?.tenantSlug,
+      conversations: payload?.conversations ?? [],
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      conversations: [],
+      error: error instanceof Error ? error.message : 'Error conectando con API',
+    };
+  }
+}
+
+export async function fetchConversationDetail(
+  session: AdminSession,
+  conversationId: string,
+  tenantSlug?: string,
+): Promise<{
+  readonly ok: boolean;
+  readonly detail?: ConversationDetailDto | undefined;
+  readonly error?: string | undefined;
+}> {
+  const config = getAdminServerConfig();
+  try {
+    const query = tenantSlug ? `?tenantSlug=${encodeURIComponent(tenantSlug)}` : '';
+    const response = await fetch(
+      `${config.apiUrl}/api/v1/conversations/${encodeURIComponent(conversationId)}/messages${query}`,
+      {
+        method: 'GET',
+        headers: buildBackendHeaders(session),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+
+    const payload = (await response.json().catch(() => null)) as
+      | (ConversationDetailDto & { error?: { message?: string } })
+      | null;
+
+    if (!response.ok || !payload?.conversation) {
+      return {
+        ok: false,
+        error:
+          payload?.error?.message ?? `No se pudo obtener el detalle (HTTP ${response.status})`,
+      };
+    }
+
+    return {
+      ok: true,
+      detail: {
+        conversation: payload.conversation,
+        messages: payload.messages,
+        approvals: payload.approvals,
+      },
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Error conectando con API',
+    };
+  }
+}
+
+export async function simulateWhatsappInbound(
+  session: AdminSession,
+  input: {
+    readonly fromPhoneE164: string;
+    readonly contactName?: string | undefined;
+    readonly textBody: string;
+  },
+): Promise<{ readonly ok: boolean; readonly data?: unknown; readonly error?: string | undefined }> {
+  const config = getAdminServerConfig();
+  try {
+    const response = await fetch(`${config.apiUrl}/api/v1/simulator/whatsapp/inbound`, {
+      method: 'POST',
+      headers: buildBackendHeaders(session),
+      body: JSON.stringify(input),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    });
+
+    const payload = (await response.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload?.error?.message ?? `Simulación falló (HTTP ${response.status})`,
+      };
+    }
+
+    return { ok: true, data: payload };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Error ejecutando simulador',
+    };
+  }
+}
+
+export async function updateConversationModeApi(
+  session: AdminSession,
+  conversationId: string,
+  input: { readonly mode: ConversationModeDto; readonly reason?: string | undefined },
+): Promise<{ readonly ok: boolean; readonly error?: string | undefined }> {
+  const config = getAdminServerConfig();
+  try {
+    const response = await fetch(
+      `${config.apiUrl}/api/v1/conversations/${encodeURIComponent(conversationId)}/mode`,
+      {
+        method: 'POST',
+        headers: buildBackendHeaders(session),
+        body: JSON.stringify(input),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+
+    const payload = (await response.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload?.error?.message ?? `Error cambiando modo (HTTP ${response.status})`,
+      };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Error cambiando modo',
+    };
+  }
+}
+
+export async function sendHumanConversationReplyApi(
+  session: AdminSession,
+  conversationId: string,
+  textBody: string,
+): Promise<{ readonly ok: boolean; readonly error?: string | undefined }> {
+  const config = getAdminServerConfig();
+  try {
+    const response = await fetch(
+      `${config.apiUrl}/api/v1/conversations/${encodeURIComponent(conversationId)}/reply`,
+      {
+        method: 'POST',
+        headers: buildBackendHeaders(session),
+        body: JSON.stringify({ textBody }),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+
+    const payload = (await response.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: payload?.error?.message ?? `Error enviando respuesta (HTTP ${response.status})`,
+      };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'Error enviando respuesta',
     };
   }
 }

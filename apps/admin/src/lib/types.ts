@@ -81,3 +81,45 @@ export interface TestJobDto {
   } | undefined;
   readonly failedReason?: string | undefined;
 }
+
+export type ConversationModeDto = 'AI' | 'HUMAN' | 'COPILOT';
+
+export interface ConversationSummaryDto {
+  readonly conversationId: string;
+  readonly contactId: string;
+  readonly contactName: string;
+  readonly phoneE164: string;
+  readonly channel: string;
+  readonly mode: ConversationModeDto;
+  readonly aiPaused: boolean;
+  readonly assignedUserId: string | null;
+  readonly pauseReason: string | null;
+  readonly lastMessageAt: string;
+  readonly lastMessagePreview: string | null;
+  readonly pendingApprovalsCount: number;
+}
+
+export interface ConversationMessageDto {
+  readonly id: string;
+  readonly conversationId: string;
+  readonly direction: 'INBOUND' | 'OUTBOUND';
+  readonly senderType: 'CUSTOMER' | 'AI' | 'HUMAN' | 'SYSTEM';
+  readonly content: string;
+  readonly externalMessageId: string | null;
+  readonly sentAt: string;
+}
+
+export interface CommercialApprovalDto {
+  readonly id: string;
+  readonly requestType: 'PAYMENT' | 'SALE' | 'INVENTORY_RESERVATION' | 'ENROLLMENT' | 'HUMAN_HANDOFF';
+  readonly summary: string;
+  readonly status: 'PENDING_VALIDATION' | 'APPROVED' | 'REJECTED';
+  readonly externalSystem: string;
+  readonly createdAt: string;
+}
+
+export interface ConversationDetailDto {
+  readonly conversation: Omit<ConversationSummaryDto, 'lastMessagePreview' | 'pendingApprovalsCount'>;
+  readonly messages: readonly ConversationMessageDto[];
+  readonly approvals: readonly CommercialApprovalDto[];
+}

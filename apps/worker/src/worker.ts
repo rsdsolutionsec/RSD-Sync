@@ -1,25 +1,36 @@
 import { randomUUID } from 'node:crypto';
+import type { AiModelProvider } from '@rsd-sync/ai-engine';
 import {
   loadLocalEnvIfPresent,
   parsePlatformConfig,
   type PlatformConfig,
 } from '@rsd-sync/configuration';
+import { PostgresDatabaseClient } from '@rsd-sync/database';
 import { createLogger, type StructuredLogger } from '@rsd-sync/observability';
 import {
   clearWorkerHeartbeat,
   createRedisConnection,
   createTestJobsWorker,
+  createWhatsappInboundWorker,
+  createWhatsappOutboundQueue,
+  createWhatsappOutboundWorker,
   publishWorkerHeartbeat,
   QUEUE_NAMES,
   type QueueName,
   type TestJobPayload,
   type TestJobResult,
+  type WhatsappInboundJobPayload,
+  type WhatsappInboundJobResult,
+  type WhatsappOutboundJobPayload,
+  type WhatsappOutboundJobResult,
 } from '@rsd-sync/queue';
 import { nowUtcIso } from '@rsd-sync/shared';
 import type { Worker } from 'bullmq';
 import type { Redis } from 'ioredis';
 import { getQueueSubscriptions } from './consumers/index.js';
 import { createTestJobProcessor } from './processors/test-job.js';
+import { createWhatsappInboundProcessor } from './processors/whatsapp-inbound.js';
+import { createWhatsappOutboundProcessor } from './processors/whatsapp-outbound.js';
 import {
   getSchedulerBootstrapDescriptor,
   type SchedulerBootstrapDescriptor,
@@ -51,7 +62,10 @@ export interface WorkerRuntime {
   readonly logger: StructuredLogger;
   readonly redis: Redis;
   readonly heartbeatRedis: Redis;
+  readonly database: PostgresDatabaseClient;
   readonly worker: Worker<TestJobPayload, TestJobResult>;
+  readonly whatsappInboundWorker: Worker<WhatsappInboundJobPayload, WhatsappInboundJobResult>;
+  readonly whatsappOutboundWorker: Worker<WhatsappOutboundJobPayload, WhatsappOutboundJobResult>;
   close(): Promise<void>;
 }
 
@@ -59,6 +73,7 @@ export async function startWorkerRuntime(options?: {
   readonly config?: PlatformConfig | undefined;
   readonly logger?: StructuredLogger | undefined;
   readonly workerId?: string | undefined;
+  readonly aiProvider?: AiModelProvider | undefined;
 }): Promise<WorkerRuntime> {
   loadLocalEnvIfPresent();
   const config = options?.config ?? parsePlatformConfig();
@@ -71,14 +86,19 @@ export async function startWorkerRuntime(options?: {
     });
 
   const redis = createRedisConnection(config.REDIS_URL);
+  const inboundRedis = createRedisConnection(config.REDIS_URL);
+  const outboundRedis = createRedisConnection(config.REDIS_URL);
+  const queueRedis = createRedisConnection(config.REDIS_URL);
   const heartbeatRedis = createRedisConnection(config.REDIS_URL);
 
-  redis.on('error', (error) => {
-    logger.warn('Worker BullMQ Redis error', { message: error.message });
-  });
-  heartbeatRedis.on('error', (error) => {
-    logger.warn('Worker heartbeat Redis error', { message: error.message });
-  });
+  for (const conn of [redis, inboundRedis, outboundRedis, queueRedis, heartbeatRedis]) {
+    conn.on('error', (error) => {
+      logger.warn('Worker Redis connection error', { message: error.message });
+    });
+  }
+
+  const database = PostgresDatabaseClient.fromPlatformConfig(config);
+  const whatsappOutboundQueue = createWhatsappOutboundQueue(queueRedis);
 
   const worker = createTestJobsWorker({
     connection: redis,
@@ -87,39 +107,80 @@ export async function startWorkerRuntime(options?: {
     processor: createTestJobProcessor({ workerId, logger }),
   });
 
-  worker.on('completed', (job) => {
-    logger.info('BullMQ worker job completed', {
+  const whatsappInboundWorker = createWhatsappInboundWorker({
+    connection: inboundRedis,
+    concurrency: config.WORKER_CONCURRENCY,
+    processor: createWhatsappInboundProcessor({
       workerId,
-      jobId: String(job.id ?? ''),
-      queue: QUEUE_NAMES.EVENTS,
-    });
+      config,
+      logger,
+      database,
+      outboundQueue: whatsappOutboundQueue,
+      aiProvider: options?.aiProvider,
+    }),
   });
 
-  worker.on('failed', (job, error) => {
-    logger.warn('BullMQ worker job failed', {
+  const whatsappOutboundWorker = createWhatsappOutboundWorker({
+    connection: outboundRedis,
+    concurrency: config.WORKER_CONCURRENCY,
+    processor: createWhatsappOutboundProcessor({
       workerId,
-      jobId: String(job?.id ?? 'unknown'),
-      attemptsMade: job?.attemptsMade ?? 0,
-      message: error.message,
-    });
+      config,
+      logger,
+      database,
+    }),
   });
 
-  worker.on('error', (error) => {
-    logger.error('BullMQ worker runtime error', {
-      workerId,
-      message: error.message,
+  const attachWorkerLogs = <TData, TResult>(w: Worker<TData, TResult>, queue: QueueName) => {
+    w.on('completed', (job) => {
+      logger.info('BullMQ worker job completed', {
+        workerId,
+        jobId: String(job.id ?? ''),
+        queue,
+      });
     });
-  });
 
-  await worker.waitUntilReady();
+    w.on('failed', (job, error) => {
+      logger.warn('BullMQ worker job failed', {
+        workerId,
+        queue,
+        jobId: String(job?.id ?? 'unknown'),
+        attemptsMade: job?.attemptsMade ?? 0,
+        message: error.message,
+      });
+    });
+
+    w.on('error', (error) => {
+      logger.error('BullMQ worker runtime error', {
+        workerId,
+        queue,
+        message: error.message,
+      });
+    });
+  };
+
+  attachWorkerLogs(worker, QUEUE_NAMES.EVENTS);
+  attachWorkerLogs(whatsappInboundWorker, QUEUE_NAMES.WHATSAPP_INBOUND);
+  attachWorkerLogs(whatsappOutboundWorker, QUEUE_NAMES.WHATSAPP_OUTBOUND);
+
+  await Promise.all([
+    worker.waitUntilReady(),
+    whatsappInboundWorker.waitUntilReady(),
+    whatsappOutboundWorker.waitUntilReady(),
+  ]);
 
   const startedAt = nowUtcIso();
+  const activeQueues = [
+    QUEUE_NAMES.EVENTS,
+    QUEUE_NAMES.WHATSAPP_INBOUND,
+    QUEUE_NAMES.WHATSAPP_OUTBOUND,
+  ];
   const heartbeatMeta = {
     workerId,
     pid: process.pid,
     concurrency: config.WORKER_CONCURRENCY,
     startedAt,
-    queues: [QUEUE_NAMES.EVENTS],
+    queues: activeQueues,
   };
 
   await publishWorkerHeartbeat(heartbeatRedis, heartbeatMeta).catch((error) => {
@@ -136,7 +197,10 @@ export async function startWorkerRuntime(options?: {
   logger.info('RSD Sync Worker started', {
     workerId,
     concurrency: config.WORKER_CONCURRENCY,
-    queue: QUEUE_NAMES.EVENTS,
+    queues: activeQueues,
+    aiProvider: config.AI_DEFAULT_PROVIDER,
+    aiModel: config.AI_DEFAULT_MODEL,
+    whatsappDeliveryMode: config.WHATSAPP_DELIVERY_MODE,
   });
 
   let closed = false;
@@ -146,14 +210,21 @@ export async function startWorkerRuntime(options?: {
     }
     closed = true;
     clearInterval(heartbeatTimer);
-    await worker.close().catch(() => undefined);
+    await Promise.all([
+      worker.close().catch(() => undefined),
+      whatsappInboundWorker.close().catch(() => undefined),
+      whatsappOutboundWorker.close().catch(() => undefined),
+    ]);
+    await whatsappOutboundQueue.close().catch(() => undefined);
     await clearWorkerHeartbeat(heartbeatRedis).catch(() => undefined);
-    await heartbeatRedis.quit().catch(() => {
-      heartbeatRedis.disconnect();
-    });
-    await redis.quit().catch(() => {
-      redis.disconnect();
-    });
+    await Promise.all(
+      [heartbeatRedis, redis, inboundRedis, outboundRedis, queueRedis].map((conn) =>
+        conn.quit().catch(() => {
+          conn.disconnect();
+        }),
+      ),
+    );
+    await database.close().catch(() => undefined);
     logger.info('RSD Sync Worker stopped gracefully', { workerId });
   };
 
@@ -163,7 +234,10 @@ export async function startWorkerRuntime(options?: {
     logger,
     redis,
     heartbeatRedis,
+    database,
     worker,
+    whatsappInboundWorker,
+    whatsappOutboundWorker,
     close,
   };
 }

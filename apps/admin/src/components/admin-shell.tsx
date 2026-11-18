@@ -26,6 +26,7 @@ interface AdminShellProps {
 
 const ACTIVE_NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: Activity },
+  { href: '/conversations', label: 'WhatsApp & CRM', icon: MessageSquare },
   { href: '/infrastructure', label: 'Infraestructura', icon: Server },
   { href: '/jobs', label: 'Trabajos de prueba', icon: PlaySquare },
 ] as const;
@@ -33,8 +34,7 @@ const ACTIVE_NAV_ITEMS = [
 const FUTURE_NAV_ITEMS = [
   { label: 'Automatizaciones', phase: 'Fase 2', icon: Boxes },
   { label: 'Seguridad & Tenants', phase: 'Fase 3', icon: ShieldCheck },
-  { label: 'AI Engine', phase: 'Fase 5', icon: Bot },
-  { label: 'Canales & CRM', phase: 'Fases 6–7', icon: MessageSquare },
+  { label: 'AI Engine Avanzado', phase: 'Fase 5', icon: Bot },
 ] as const;
 
 export function AdminShell({ email, authMode, environment, children }: AdminShellProps) {

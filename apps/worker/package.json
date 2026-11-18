@@ -18,8 +18,12 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@rsd-sync/ai-engine": "workspace:*",
     "@rsd-sync/automation-core": "workspace:*",
     "@rsd-sync/configuration": "workspace:*",
+    "@rsd-sync/crm-core": "workspace:*",
+    "@rsd-sync/database": "workspace:*",
+    "@rsd-sync/integrations": "workspace:*",
     "@rsd-sync/observability": "workspace:*",
     "@rsd-sync/queue": "workspace:*",
     "@rsd-sync/shared": "workspace:*",

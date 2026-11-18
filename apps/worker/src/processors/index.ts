@@ -15,3 +15,5 @@ export const DEFAULT_PROCESSOR_DESCRIPTORS: readonly WorkerProcessorDescriptor[]
 ];
 
 export * from './test-job.js';
+export * from './whatsapp-inbound.js';
+export * from './whatsapp-outbound.js';

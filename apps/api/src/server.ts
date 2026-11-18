@@ -11,8 +11,14 @@ import { createLogger, type StructuredLogger } from '@rsd-sync/observability';
 import {
   createRedisConnection,
   createTestJobsQueue,
+  createWhatsappInboundQueue,
+  createWhatsappOutboundQueue,
   type TestJobPayload,
   type TestJobResult,
+  type WhatsappInboundJobPayload,
+  type WhatsappInboundJobResult,
+  type WhatsappOutboundJobPayload,
+  type WhatsappOutboundJobResult,
 } from '@rsd-sync/queue';
 import { asCorrelationId, RsdError } from '@rsd-sync/shared';
 import type { Queue } from 'bullmq';
@@ -20,8 +26,10 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import type { Redis } from 'ioredis';
 import { CORRELATION_HEADER_NAME } from './middleware/tenant-context.js';
 import { API_MODULE_BOUNDARIES, type ApiModuleBoundary } from './modules/index.js';
+import { registerConversationRoutes } from './routes/conversations.js';
 import { getHealthEndpointDefinitions, registerHealthRoutes, type HealthRouteDefinition } from './routes/health.js';
 import { registerV1Routes } from './routes/v1.js';
+import { registerWhatsappRoutes } from './routes/whatsapp.js';
 
 export interface ApiBootstrapInfo {
   readonly service: 'rsd-sync-api';
@@ -52,6 +60,8 @@ export interface ApiServerRuntime {
   readonly redis: Redis;
   readonly database: PostgresDatabaseClient;
   readonly testQueue: Queue<TestJobPayload, TestJobResult>;
+  readonly whatsappInboundQueue: Queue<WhatsappInboundJobPayload, WhatsappInboundJobResult>;
+  readonly whatsappOutboundQueue: Queue<WhatsappOutboundJobPayload, WhatsappOutboundJobResult>;
   listen(): Promise<string>;
   close(): Promise<void>;
 }
@@ -78,6 +88,8 @@ export async function buildApiServer(options?: {
   const database = PostgresDatabaseClient.fromPlatformConfig(config);
   const supabase = new SupabaseConnector(config);
   const testQueue = createTestJobsQueue(redis);
+  const whatsappInboundQueue = createWhatsappInboundQueue(redis);
+  const whatsappOutboundQueue = createWhatsappOutboundQueue(redis);
 
   const app = Fastify({
     logger: false,
@@ -160,6 +172,8 @@ export async function buildApiServer(options?: {
 
   registerHealthRoutes(app, { redis, database, startedAtMs });
   registerV1Routes(app, { config, redis, database, supabase, testQueue, startedAtMs });
+  registerWhatsappRoutes(app, { config, database, supabase, whatsappInboundQueue });
+  registerConversationRoutes(app, { config, database, supabase, whatsappOutboundQueue });
 
   let closed = false;
   const close = async (): Promise<void> => {
@@ -169,6 +183,8 @@ export async function buildApiServer(options?: {
     closed = true;
     await app.close().catch(() => undefined);
     await testQueue.close().catch(() => undefined);
+    await whatsappInboundQueue.close().catch(() => undefined);
+    await whatsappOutboundQueue.close().catch(() => undefined);
     await redis.quit().catch(() => {
       redis.disconnect();
     });
@@ -183,6 +199,8 @@ export async function buildApiServer(options?: {
     redis,
     database,
     testQueue,
+    whatsappInboundQueue,
+    whatsappOutboundQueue,
     listen: async () => {
       const address = await app.listen({
         host: config.API_HOST,
