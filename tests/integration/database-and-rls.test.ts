@@ -39,6 +39,7 @@ describe('PostgreSQL Local Database, Migrations, RLS & Supabase Readiness', () =
     expect(migrations.rows.map((r) => r.filename)).toEqual([
       '0001_phase0_foundation.sql',
       '0002_phase1_supabase_hardening.sql',
+      '0003_whatsapp_ai_crm_local.sql',
     ]);
   });
 
